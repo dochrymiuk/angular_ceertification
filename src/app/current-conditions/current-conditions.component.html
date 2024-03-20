@@ -1,7 +1,19 @@
-<div>
-  <div *ngFor="let location of currentConditionsByZip()" class="well flex" (click)="showForecast(location.zip)">
+<!--<app-tabs [tabs]="currentConditionsByZip()" (onRemove)="remove($event)" [bodyTemplate]="bodyTemplate" [headerTemplate]="headerTemplate">-->
+<!--</app-tabs>-->
+
+<app-tabs [tabs]="currentConditionsByZip()" [tabNameFunction]="headerFunction" (onRemove)="remove($event)" [bodyTemplate]="bodyTemplate">
+</app-tabs>
+
+<ng-template #headerTemplate let-location>
+  <span>{{location.data.name}} ({{location.zip}})</span>
+  <img class="header-icon" [src]="weatherService.getWeatherIcon(location.data.weather[0].id)">
+</ng-template>
+
+<!--we can pass template via input or content projection -->
+<ng-template #bodyTemplate let-location>
+<!--  we can here customize our template depend on some conditions, like image for example-->
+  <div class="well flex">
     <div>
-      <h3>{{location.data.name}} ({{location.zip}})</h3>
       <h4>Current conditions: {{location.data.weather[0].main}}</h4>
       <h4>Temperatures today:</h4>
       <p>
@@ -14,8 +26,7 @@
       </p>
     </div>
     <div>
-      <span class="close" (click)="locationService.removeLocation(location.zip)">&times;</span>
       <img [src]="weatherService.getWeatherIcon(location.data.weather[0].id)">
     </div>
- </div>
-</div>
+  </div>
+</ng-template>

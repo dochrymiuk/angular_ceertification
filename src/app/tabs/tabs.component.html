@@ -1,0 +1,14 @@
+<div class="tabs">
+    <div class="tabs-group">
+        <div class="tab" *ngFor="let tab of tabs; let index=index" (click)="select(index)" [class.active]="selectedTabIndex === index">
+            <ng-container [ngTemplateOutlet]="headerTemplate || defaultHeader" [ngTemplateOutletContext]="{ $implicit: tab, index: index }"></ng-container>
+            <div class="close" (click)="remove($event, index)">&times;</div>
+        </div>
+    </div>
+    <div class="body" *ngIf="selectedTab">
+        <ng-container [ngTemplateOutlet]="bodyTemplate" [ngTemplateOutletContext]="{ $implicit: selectedTab }"></ng-container>
+    </div>
+</div>
+<ng-template #defaultHeader let-tab>
+    <span>{{ tabNameFunction(tab) }}</span>
+</ng-template>

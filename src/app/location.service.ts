@@ -1,33 +1,37 @@
-import { Injectable } from '@angular/core';
-import {WeatherService} from "./weather.service";
+import {Injectable, signal} from '@angular/core';
+import {toObservable} from '@angular/core/rxjs-interop';
+import {Observable} from 'rxjs';
 
 export const LOCATIONS : string = "locations";
 
 @Injectable()
 export class LocationService {
 
-  locations : string[] = [];
+  private locations = signal<string[]>([]);
 
-  constructor(private weatherService : WeatherService) {
-    let locString = localStorage.getItem(LOCATIONS);
-    if (locString)
-      this.locations = JSON.parse(locString);
-    for (let loc of this.locations)
-      this.weatherService.addCurrentConditions(loc);
+  constructor() {
+    const locString = localStorage.getItem(LOCATIONS);
+    if (locString) {
+      this.locations.set(JSON.parse(locString));
+    }
+  }
+
+  // we can emit add event and remove event, but in this case I emit full list
+  getCurrentLocations(): Observable<string[]> {
+    return toObservable(this.locations);
   }
 
   addLocation(zipcode : string) {
-    this.locations.push(zipcode);
-    localStorage.setItem(LOCATIONS, JSON.stringify(this.locations));
-    this.weatherService.addCurrentConditions(zipcode);
+    this.locations.update(locations => locations.includes(zipcode) ? locations : [...locations, zipcode]);
+    this.updateLocationsInStorage();
   }
 
   removeLocation(zipcode : string) {
-    let index = this.locations.indexOf(zipcode);
-    if (index !== -1){
-      this.locations.splice(index, 1);
-      localStorage.setItem(LOCATIONS, JSON.stringify(this.locations));
-      this.weatherService.removeCurrentConditions(zipcode);
-    }
+    this.locations.update(locations => locations.filter(l => l !== zipcode));
+    this.updateLocationsInStorage();
+  }
+
+  private updateLocationsInStorage(): void {
+    localStorage.setItem(LOCATIONS, JSON.stringify(this.locations()));
   }
 }
